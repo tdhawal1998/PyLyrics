@@ -8,7 +8,7 @@ class Track(object):
 		self.album = album
 		self.artist = artist
 	def __repr__(self):
-		return self.name
+		return self.name.encode('utf-8')
 	def link(self):
 		return 'http://lyrics.wikia.com/{0}:{1}'.format(self.artist.replace(' ', '-'),self.name.replace(' ','-'))
 	def getLyrics(self):
@@ -54,18 +54,20 @@ class PyLyrics:
 				pass
 		
 		if als == []:
-			raise ValueError("Unknown Artist Name given")
-			return None
+			print('No albums found for ',singer)
 		return als
 	@staticmethod 
 	def getTracks(album):
 		url = "http://lyrics.wikia.com/api.php?action=lyrics&artist={0}&fmt=xml".format(album.artist())
 		soup = BeautifulSoup(requests.get(url).text)
+		
 
 		for al in soup.find_all('album'):
 			if al.text.lower().strip() == album.name.strip().lower():
 				currentAlbum = al
 				break
+			elif al == soup.find_all('album')[-1]:
+                                currentAlbum = al
 		songs =[Track(song.text,album,album.artist()) for song in currentAlbum.findNext('songs').findAll('item')]
 		return songs
 
@@ -79,8 +81,8 @@ class PyLyrics:
 		#Get main lyrics holder
 		lyrics = s.find("div",{'class':'lyricbox'})
 		if lyrics is None:
-			raise ValueError("Song or Singer does not exist or the API does not have Lyrics")
-			return None
+			
+			return ""
 		#Remove Scripts
 		[s.extract() for s in lyrics('script')]
 
